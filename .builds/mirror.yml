@@ -1,0 +1,11 @@
+image: alpine/edge
+secrets:
+  - 24e61459-4ae2-4326-9d00-f671c7619850
+environment:
+  REPO: ai-templates
+  GH_USER: liskvork
+tasks:
+  - push-to-github: |
+      cd ~/liskvork-ai-templates
+      git config --global credential.helper store
+      git push --mirror "https://github.com/${GH_USER}/${REPO}"
