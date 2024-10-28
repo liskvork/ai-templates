@@ -58,7 +58,7 @@ auto handle_board(std::string &cmd) -> void {
 }
 
 struct CommandMapping {
-  std::string_view cmd;
+  std::string cmd;
   std::function<void(std::string &)> func;
 };
 
@@ -94,9 +94,8 @@ const std::array<CommandMapping, 7> COMMAND_MAPPINGS{{
 }};
 
 auto handle_command(std::string &cmd) -> void {
-  std::string token = cmd.substr(0, cmd.find(' '));
   for (const auto &i : COMMAND_MAPPINGS) {
-    if (i.cmd == token) {
+    if (cmd.rfind(i.cmd, 0) == 0) {
       i.func(cmd);
       return;
     }
