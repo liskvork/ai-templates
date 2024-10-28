@@ -1,3 +1,1 @@
-# snelbot
-
-A really simple yet effective example AI for liskvork
+# liskvork zig ai template
