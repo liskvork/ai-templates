@@ -59,7 +59,7 @@ COMMAND_MAPPINGS: dict[str, Callable[[str], None]] = {
 
 
 def handle_command(cmd: str) -> None:
-    cmd_u = cmd.upper()
+    cmd_u = cmd.split()[0].upper()
     if cmd_u not in COMMAND_MAPPINGS:
         return send_log(LogType.UNKNOWN, "command is not implemented")
     return COMMAND_MAPPINGS[cmd_u](cmd)
