@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 
+import os
+import logging
 import sys
-from typing_extensions import Callable
-from enum import Enum
 
+from enum import Enum, auto
+from typing import Callable
+
+
+logger = logging.getLogger(__name__)
 
 should_stop: bool = False
 
@@ -34,17 +39,17 @@ def handle_board(msg: str) -> None: ...
 
 
 class LogType(Enum):
-    UNKNOWN = 0
-    ERROR = 1
-    MESSAGE = 2
-    DEBUG = 3
+    UNKNOWN = auto()
+    ERROR = auto()
+    MESSAGE = auto()
+    DEBUG = auto()
 
     def __str__(self):
-        return f"{self.name}"
+        return self.name
 
 
 def send_log(log_type: LogType, msg: str):
-    print(f"{str(log_type)} {msg}")
+    print(log_type, msg)
 
 
 COMMAND_MAPPINGS: dict[str, Callable[[str], None]] = {
@@ -60,19 +65,24 @@ COMMAND_MAPPINGS: dict[str, Callable[[str], None]] = {
 
 def handle_command(cmd: str) -> None:
     cmd_u = cmd.split()[0].upper()
-    if cmd_u not in COMMAND_MAPPINGS:
-        return send_log(LogType.UNKNOWN, "command is not implemented")
-    return COMMAND_MAPPINGS[cmd_u](cmd)
+
+    command_handler = COMMAND_MAPPINGS.get(cmd_u)
+    if command_handler is None:
+        return logger.warning("command is not implemented")
+
+    return command_handler(cmd)
 
 
 def main() -> int:
+    logging.basicConfig(level=logging.DEBUG)
+
     while not should_stop:
         try:
             cmd = input()
-        except EOFError:
-            return 0
+        except (KeyboardInterrupt, EOFError):
+            return os.EX_OK
         handle_command(cmd)
-    return 0
+    return os.EX_OK
 
 
 if __name__ == "__main__":
