@@ -3,8 +3,8 @@ const Allocator = std.mem.Allocator;
 
 const allocator = std.heap.c_allocator;
 
-const stdout = std.io.getStdOut().writer();
-const stdin = std.io.getStdIn().reader();
+const stdout = std.fs.File.stdout();
+const stdin = std.fs.File.stdin();
 
 const WriteError = std.posix.WriteError;
 const ReadError = std.posix.ReadError;
@@ -102,12 +102,18 @@ fn handle_command(cmd: []const u8) !void {
 
 pub fn main() !void {
     var read_buffer: [256]u8 = undefined;
+    var stdin_reader = stdin.reader(&read_buffer);
     while (!should_stop) {
         // Just hope a command is not bigger than the read buffer :)
-        const cmd = try stdin.readUntilDelimiterOrEof(&read_buffer, '\n');
-        // EOF handling
-        if (cmd == null)
-            break;
-        try handle_command(cmd.?);
+        const cmd = stdin_reader.interface.takeDelimiterInclusive('\n') catch |e| {
+            switch (e) {
+                error.EndOfStream => {
+                    should_stop = true;
+                    continue;
+                },
+                else => return e,
+            }
+        };
+        try handle_command(std.mem.trim(u8, cmd, &std.ascii.whitespace));
     }
 }

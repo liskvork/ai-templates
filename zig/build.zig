@@ -3,14 +3,24 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const llvm = b.option(
+        bool,
+        "llvm",
+        "Use LLVM backend",
+    );
+
+    const mod = b.addModule("pbrain-zig-template-mod", .{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+        .root_source_file = b.path("src/main.zig"),
+    });
 
     const exe = b.addExecutable(.{
         .name = "pbrain-zig-template",
-        .root_source_file = b.path("src/main.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = mod,
+        .use_llvm = llvm,
     });
-    exe.linkLibC();
 
     b.installArtifact(exe);
 
@@ -26,9 +36,8 @@ pub fn build(b: *std.Build) void {
     run_step.dependOn(&run_cmd.step);
 
     const exe_unit_tests = b.addTest(.{
-        .root_source_file = b.path("src/main.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = mod,
+        .use_llvm = llvm,
     });
 
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
